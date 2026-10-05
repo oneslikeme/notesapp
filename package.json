@@ -1,0 +1,50 @@
+{
+  "name": "inkwell",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "postinstall": "node scripts/copy-pdfjs.mjs",
+    "predev": "node scripts/copy-pdfjs.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/copy-pdfjs.mjs",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/source-serif-4": "^5.3.0",
+    "@tiptap/extension-highlight": "^3.31.4",
+    "@tiptap/extension-placeholder": "^3.31.4",
+    "@tiptap/extension-task-item": "^3.31.4",
+    "@tiptap/extension-task-list": "^3.31.4",
+    "@tiptap/extension-typography": "^3.31.4",
+    "@tiptap/extensions": "^3.31.4",
+    "@tiptap/pm": "^3.31.4",
+    "@tiptap/react": "^3.31.4",
+    "@tiptap/starter-kit": "^3.31.4",
+    "@tiptap/suggestion": "^3.31.4",
+    "dexie": "^4.4.6",
+    "diff": "^9.0.0",
+    "fflate": "^0.8.3",
+    "lucide-react": "^1.52.0",
+    "marked": "^18.1.0",
+    "minisearch": "^7.2.0",
+    "nanoid": "^6.0.1",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.4.299",
+    "perfect-freehand": "^1.2.3",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.2",
+    "vite-plugin-pwa": "^2.0.0"
+  }
+}
