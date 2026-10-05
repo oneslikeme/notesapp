@@ -7,6 +7,7 @@ import type { NoteMeta, NoteType, Notebook, Settings, Version } from './types';
 import { DEFAULT_SETTINGS } from './types';
 import { uid } from './util';
 import { deleteBlobs } from './blobs';
+import { markNote, markNoteDeleted, markNotebooks } from './sync/changes';
 
 const DAY = 86400000;
 
@@ -77,6 +78,8 @@ export interface CreateOpts {
   scratch?: boolean;
   doc?: any;
   pages?: string[];
+  /** Fixed id (used for the shared welcome note so devices don't each create one). */
+  id?: string;
   thumb?: string;
   open?: boolean;
 }
@@ -90,7 +93,7 @@ export async function createNote(type: NoteType, opts: CreateOpts = {}): Promise
   const doc = opts.doc ?? emptyDoc(type);
   const idx = indexContent(type, doc);
   const meta: NoteMeta = {
-    id: uid(),
+    id: opts.id ?? uid(),
     type,
     title: opts.title ?? '',
     notebookId: opts.scratch ? null : notebookId,
@@ -113,6 +116,7 @@ export async function createNote(type: NoteType, opts: CreateOpts = {}): Promise
   });
   setState((st) => ({ notes: { ...st.notes, [meta.id]: meta } }));
   indexNote(meta, idx.text, opts.pages);
+  markNote(meta.id);
   if (opts.open !== false) openNote(meta.id);
   return meta;
 }
@@ -153,6 +157,7 @@ export async function saveContent(id: string, doc: any, extra: Partial<NoteMeta>
   const next = mergeMeta(id, patch);
   if (!next) return;
   indexNote(next, idx.text, prevPages);
+  markNote(id);
 
   const minutes = getState().settings.versionMinutes;
   if (!quiet && now - (await latestVersionTime(id)) > minutes * 60_000) await snapshot(id, doc, idx.text);
@@ -173,6 +178,7 @@ export async function updateMeta(id: string, patch: Partial<NoteMeta>, touch = f
   const full = touch ? { ...patch, updatedAt: Date.now() } : patch;
   await db.notes.update(id, full);
   const next = mergeMeta(id, full);
+  if (next) markNote(id);
   if (next && ('title' in patch || 'tags' in patch)) reindexMeta(next);
 }
 
@@ -220,7 +226,8 @@ export async function restoreNote(id: string) {
   await updateMeta(id, patch);
 }
 
-export async function deleteForever(id: string, silent = false) {
+/** `fromSync`: the deletion came from another device, so don't send it back. */
+export async function deleteForever(id: string, silent = false, fromSync = false) {
   const content = await db.contents.get(id);
   const versions = await db.versions.where('noteId').equals(id).toArray();
   const blobIds = collectBlobIds(content?.doc);
@@ -242,6 +249,7 @@ export async function deleteForever(id: string, silent = false) {
     await db.versions.where('noteId').equals(id).delete();
   });
   await deleteBlobs(blobIds);
+  if (!fromSync) markNoteDeleted(id);
   removeFromIndex(id);
   setState((s) => {
     const notes = { ...s.notes };
@@ -304,15 +312,18 @@ export async function addTags(ids: string[], tags: string[]) {
 /* ---------------- Notebooks ---------------- */
 
 export async function createNotebook(name: string, parentId: string | null = null) {
-  const nb: Notebook = { id: uid(), name: name.trim() || 'Untitled notebook', parentId, createdAt: Date.now(), order: Date.now() };
+  const nb: Notebook = { id: uid(), name: name.trim() || 'Untitled notebook', parentId, createdAt: Date.now(), order: Date.now(), updatedAt: Date.now() };
   await db.notebooks.put(nb);
   setState((s) => ({ notebooks: { ...s.notebooks, [nb.id]: nb } }));
+  markNotebooks();
   return nb;
 }
 
 export async function updateNotebook(id: string, patch: Partial<Notebook>) {
-  await db.notebooks.update(id, patch);
-  setState((s) => ({ notebooks: { ...s.notebooks, [id]: { ...s.notebooks[id], ...patch } } }));
+  const full = { ...patch, updatedAt: Date.now() };
+  await db.notebooks.update(id, full);
+  setState((s) => ({ notebooks: { ...s.notebooks, [id]: { ...s.notebooks[id], ...full } } }));
+  markNotebooks();
 }
 
 export async function deleteNotebook(id: string) {
@@ -323,6 +334,7 @@ export async function deleteNotebook(id: string) {
   for (const child of Object.values(s.notebooks).filter((n) => n.parentId === id)) await updateNotebook(child.id, { parentId: nb.parentId });
   for (const n of Object.values(s.notes).filter((n) => n.notebookId === id)) await updateMeta(n.id, { notebookId: nb.parentId });
   await db.notebooks.delete(id);
+  markNotebooks(id);
   setState((st) => {
     const notebooks = { ...st.notebooks };
     delete notebooks[id];
@@ -461,5 +473,5 @@ async function seedWelcome() {
       ],
     },
   };
-  await createNote('page', { title: 'Welcome to Inkwell', doc, open: false });
+  await createNote('page', { id: 'welcome', title: 'Welcome to Inkwell', doc, open: false });
 }

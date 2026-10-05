@@ -5,6 +5,7 @@ import { setSettings } from '../lib/actions';
 import { Segmented } from '../components/ui';
 import { fmtBytes, pickFiles } from '../lib/util';
 import { importFiles } from '../lib/importer';
+import { SyncSettings } from '../components/SyncUI';
 
 export function SettingsView() {
   const s = useStore((st) => st.settings);
@@ -63,6 +64,8 @@ export function SettingsView() {
             />
           </Row>
         </section>
+
+        <SyncSettings />
 
         <section className="set-section">
           <h2>Your data</h2>

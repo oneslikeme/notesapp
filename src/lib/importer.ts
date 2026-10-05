@@ -5,6 +5,7 @@ import { createNote } from './actions';
 import { db } from './db';
 import { loadPdfData, pageText, renderThumb } from './pdf';
 import { indexNote } from './search';
+import { markNote } from './sync/changes';
 import { getState, setState, toast } from './store';
 import type { PdfDoc } from './types';
 import { schemaExtensions } from '../editors/page/schema';
@@ -56,6 +57,7 @@ async function extractText(noteId: string, doc: Awaited<ReturnType<typeof loadPd
     if (i % 20 === 0) await new Promise((r) => setTimeout(r, 0));
   }
   await db.contents.update(noteId, { pages: texts });
+  markNote(noteId);
   const meta = getState().notes[noteId];
   const c = await db.contents.get(noteId);
   if (meta && c) indexNote(meta, c.text, texts);

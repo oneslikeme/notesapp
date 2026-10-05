@@ -10,6 +10,7 @@ import { noteIcon, noteTitle } from './noteTypes';
 import type { Notebook } from '../lib/types';
 import { modKey, pickFiles } from '../lib/util';
 import { importFiles } from '../lib/importer';
+import { SyncBadge } from './SyncUI';
 
 export const DRAG_NOTE = 'application/x-inkwell-notes';
 
@@ -117,6 +118,7 @@ export function Sidebar() {
       </div>
 
       <div className="sb-bottom">
+        <SyncBadge />
         <NavRow icon={Trash} label="Trash" count={trashCount || undefined} on={isOn('trash')} onClick={() => navigate('/trash')} />
         <div className="sb-row">
           <NavRow icon={Settings} label="Settings" on={isOn('settings')} onClick={() => navigate('/settings')} />

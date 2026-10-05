@@ -36,6 +36,8 @@ export interface Notebook {
   createdAt: number;
   order: number;
   collapsed?: boolean;
+  /** Last change, for merging notebooks across devices. */
+  updatedAt?: number;
 }
 
 export interface BlobRec {

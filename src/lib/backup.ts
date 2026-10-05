@@ -63,6 +63,8 @@ export async function restoreBackup(file: File) {
         if (raw) await db.blobs.put({ ...b, blob: new Blob([raw as BlobPart], { type: b.mime }) });
       }
     });
+    // Everything restored must be uploaded again on the next sync.
+    await (await import('./sync/engine')).resetSyncBaseline();
     toast(`Restored ${data.notes.length} notes — reloading…`);
     setTimeout(() => location.reload(), 900);
   } catch (e: any) {

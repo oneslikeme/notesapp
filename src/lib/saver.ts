@@ -30,6 +30,10 @@ export function hasPending() {
   return pending.size > 0;
 }
 
+export function hasPendingFor(id: string) {
+  return pending.has(id);
+}
+
 window.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') flushAll();
 });

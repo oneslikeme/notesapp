@@ -56,3 +56,25 @@ src/
   views/      home, lists, search, settings
   styles/     design tokens + component styles (light & dark)
 ```
+
+## Sync across devices (OneDrive)
+
+Inkwell syncs through a private app folder in your own OneDrive (`OneDrive/Apps/Inkwell`). It asks only for access to that folder (`Files.ReadWrite.AppFolder`), never the rest of your files, and no other server is involved.
+
+- **What syncs:** notes (including their PDFs, audio and images), notebooks, tags and pins. Version history and per-device preferences (theme, open tabs) stay local.
+- **When it syncs:** on launch, when you return to the app, a few seconds after you edit, every 90 seconds while open, and on **Sync now**.
+- **Conflicts:** if the same note changes on two devices before they sync, the other device's version stays in the note and yours is kept as "(conflicted copy)". Nothing is overwritten silently.
+- **Sign-in:** Microsoft asks single-page apps to sign in again periodically (about daily). Inkwell then shows **Reconnect OneDrive** in the sidebar; your edits stay safe locally until you do.
+
+### One-time setup
+
+1. Go to <https://entra.microsoft.com> → **App registrations** → **New registration** (sign in with the Microsoft account whose OneDrive you want to use).
+2. Name: `Inkwell`. Supported account types: **Accounts in any organizational directory and personal Microsoft accounts**.
+3. Redirect URI: platform **Single-page application (SPA)**, URI `https://oneslikeme.github.io/notesapp/`. Click **Register**.
+4. In **Authentication**, under the SPA platform, also add `http://localhost:5173/` and `http://localhost:4173/` if you use the local versions.
+5. Copy the **Application (client) ID** from the Overview page. It's not a secret.
+6. In Inkwell: **Settings → Sync with OneDrive**, paste the ID, **Save**, then **Connect OneDrive**. Do this on each device, or commit the ID in a `.env.production` file as `VITE_ONEDRIVE_CLIENT_ID=<id>` so every device has it built in.
+
+## Hosting (GitHub Pages)
+
+Every push to `main` builds and deploys via `.github/workflows/deploy.yml` to <https://oneslikeme.github.io/notesapp/>. Enable it once in the repository: **Settings → Pages → Build and deployment → Source: GitHub Actions**.

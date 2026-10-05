@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // GitHub Pages serves the app from /<repo>/; set BASE_PATH there (see .github/workflows/deploy.yml).
+  base: process.env.BASE_PATH || '/',
   plugins: [
     react(),
     VitePWA({
@@ -17,9 +19,9 @@ export default defineConfig({
         display: 'standalone',
         icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }],
         shortcuts: [
-          { name: 'Quick capture', url: '/?action=capture', icons: [{ src: 'icon.svg', sizes: 'any' }] },
-          { name: 'New page', url: '/?action=new', icons: [{ src: 'icon.svg', sizes: 'any' }] },
-          { name: 'Search', url: '/#/search', icons: [{ src: 'icon.svg', sizes: 'any' }] },
+          { name: 'Quick capture', url: './?action=capture', icons: [{ src: 'icon.svg', sizes: 'any' }] },
+          { name: 'New page', url: './?action=new', icons: [{ src: 'icon.svg', sizes: 'any' }] },
+          { name: 'Search', url: './#/search', icons: [{ src: 'icon.svg', sizes: 'any' }] },
         ],
       },
       workbox: {

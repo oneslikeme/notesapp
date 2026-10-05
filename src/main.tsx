@@ -14,6 +14,8 @@ import { registerSW } from 'virtual:pwa-register';
 createRoot(document.getElementById('root')!).render(<App />);
 boot()
   .then(async () => {
+    // OneDrive sync (also completes a sign-in redirect if we're returning from one).
+    import('./lib/sync/engine').then((m) => m.startSync());
     // App-icon shortcuts (installed PWA): ?action=capture | new
     const action = new URLSearchParams(location.search).get('action');
     if (!action) return;
